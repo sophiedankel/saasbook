@@ -1,11 +1,18 @@
 class Movie < ActiveRecord::Base
   # Returns an array containing allowed  values for ratings
   def self.all_ratings ; %w[G PG PG-13 R NC-17] ; end
+  
+  # format movie title before save
+  before_save :capitalize_title
+  def capitalize_title
+    self.title = self.title.split(/\s+/).map(&:downcase).map(&:capitalize).join(' ')
+  end
 
   # Validate model fields
-  validates :title, :presence => true, :uniqueness => true, :length => { :minimum => 3 }
+  validates :title, :presence => true, :uniqueness => true, 
+    :length => { :minimum => 3 }
   validates :release_date, :presence => true
-  validate :released_1930_or_later # uses custom validator below
+  validate :released_1930_or_later
   validates :rating, :inclusion => {:in => Movie.all_ratings},
     :unless => :grandfathered?
 
